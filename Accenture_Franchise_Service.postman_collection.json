@@ -1,0 +1,231 @@
+{
+  "info": {
+    "name": "Accenture Franchise Service API - Cloud Production",
+    "description": "Colección completa para pruebas de la API reactiva de Franquicias, Sucursales y Productos desplegada en la nube.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://accenture-franchise-service.onrender.com",
+      "type": "string"
+    },
+    {
+      "key": "franchiseId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "branchId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "productId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Salud y Descubrimiento",
+      "item": [
+        {
+          "name": "Indice de Bienvenida",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/"
+          }
+        },
+        {
+          "name": "Healthcheck Actuator (PostgreSQL R2DBC)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/actuator/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Franquicias",
+      "item": [
+        {
+          "name": "Crear Franquicia",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Franquicia Starbucks\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/franchises"
+          }
+        },
+        {
+          "name": "Listar Todas las Franquicias",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/franchises"
+          }
+        },
+        {
+          "name": "Obtener Franquicia por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/franchises/{{franchiseId}}"
+          }
+        },
+        {
+          "name": "Actualizar Nombre de Franquicia (Plus)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Starbucks Coffee Company\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/franchises/{{franchiseId}}/name"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Sucursales",
+      "item": [
+        {
+          "name": "Crear Sucursal en Franquicia",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sucursal Parque 93\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/franchises/{{franchiseId}}/branches"
+          }
+        },
+        {
+          "name": "Listar Sucursales de una Franquicia",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/franchises/{{franchiseId}}/branches"
+          }
+        },
+        {
+          "name": "Actualizar Nombre de Sucursal (Plus)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sucursal Parque 93 Flagship\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/branches/{{branchId}}/name"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Productos",
+      "item": [
+        {
+          "name": "Agregar Producto a Sucursal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Café Americano Especial\",\n  \"stock\": 85\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/branches/{{branchId}}/products"
+          }
+        },
+        {
+          "name": "Listar Productos de Sucursal",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/branches/{{branchId}}/products"
+          }
+        },
+        {
+          "name": "Modificar Stock de Producto",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stock\": 150\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/products/{{productId}}/stock"
+          }
+        },
+        {
+          "name": "Modificar Nombre de Producto (Plus)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Café Americano Supremo\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/products/{{productId}}/name"
+          }
+        },
+        {
+          "name": "Eliminar Producto",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/v1/products/{{productId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Consulta Analítica Reactiva (Criterio 7)",
+      "item": [
+        {
+          "name": "Producto con Mayor Stock por Sucursal",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/franchises/{{franchiseId}}/max-stock-products"
+          }
+        }
+      ]
+    }
+  ]
+}
