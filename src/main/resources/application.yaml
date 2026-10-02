@@ -1,0 +1,36 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: accenture-franchise-service
+
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:franchise_db}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.accenture.service: DEBUG
+    org.springframework.r2dbc: INFO
