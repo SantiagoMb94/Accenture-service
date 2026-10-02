@@ -8,7 +8,7 @@ spring:
   r2dbc:
     url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:franchise_db}
     username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
+    password: ${DB_PASSWORD:postgrespassword}
     pool:
       enabled: true
       initial-size: 5
@@ -24,10 +24,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info
   endpoint:
     health:
-      show-details: always
+      show-details: never
 
 logging:
   level:

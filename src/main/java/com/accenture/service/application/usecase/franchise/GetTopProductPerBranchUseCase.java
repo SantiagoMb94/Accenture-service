@@ -2,6 +2,7 @@ package com.accenture.service.application.usecase.franchise;
 
 import com.accenture.service.domain.exception.FranchiseNotFoundException;
 import com.accenture.service.domain.model.BranchTopProduct;
+import com.accenture.service.domain.model.Product;
 import com.accenture.service.domain.port.out.BranchRepositoryPort;
 import com.accenture.service.domain.port.out.FranchiseRepositoryPort;
 import com.accenture.service.domain.port.out.ProductRepositoryPort;
@@ -13,9 +14,9 @@ import reactor.core.publisher.Mono;
  * Consultar el producto con mayor stock por cada sucursal de una franquicia específica.
  *
  * Se resuelve de forma 100% no bloqueante empleando operadores funcionales de Project Reactor:
- * - flatMap: Concurrencia y combinación asíncrona de flujos por sucursal.
- * - reduce: Operador funcional de agregación reactiva para seleccionar el producto con stock máximo.
- * - defaultIfEmpty: Manejo funcional elegante para sucursales que no tienen productos registrados aún.
+ * - concatMap: Recorre las sucursales conservando el orden en que fueron consultadas.
+ * - reduce: Elige el mayor stock; si empatan, gana el producto con menor id.
+ * - defaultIfEmpty: Las sucursales sin productos se mantienen con topProduct nulo.
  */
 public class GetTopProductPerBranchUseCase {
 
@@ -35,11 +36,22 @@ public class GetTopProductPerBranchUseCase {
         return franchiseRepositoryPort.findById(franchiseId)
                 .switchIfEmpty(Mono.error(new FranchiseNotFoundException(franchiseId)))
                 .flatMapMany(franchise -> branchRepositoryPort.findByFranchiseId(franchise.getId()))
-                .flatMap(branch ->
+                .concatMap(branch ->
                         productRepositoryPort.findByBranchId(branch.getId())
-                                .reduce((p1, p2) -> p1.getStock() >= p2.getStock() ? p1 : p2)
+                                .reduce(this::productWithMoreStock)
                                 .map(topProduct -> new BranchTopProduct(branch.getId(), branch.getName(), topProduct))
                                 .defaultIfEmpty(new BranchTopProduct(branch.getId(), branch.getName(), null))
                 );
+    }
+
+    private Product productWithMoreStock(Product current, Product candidate) {
+        int stockComparison = Integer.compare(candidate.getStock(), current.getStock());
+        if (stockComparison > 0) {
+            return candidate;
+        }
+        if (stockComparison < 0) {
+            return current;
+        }
+        return candidate.getId() < current.getId() ? candidate : current;
     }
 }

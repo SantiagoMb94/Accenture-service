@@ -38,7 +38,7 @@ docker compose down -v
 ```
 
 Si prefieres correrlo sin Docker:
-1. Asegúrate de tener una base PostgreSQL corriendo en el puerto 5432.
+1. Asegúrate de tener PostgreSQL en el puerto 5432, con la base `franchise_db`, usuario `postgres` y contraseña `postgrespassword` (los mismos valores por defecto de `application.yaml` y de Compose).
 2. Ejecuta:
 ```bash
 ./gradlew bootRun
@@ -207,7 +207,7 @@ com.accenture.service
 - **Dominio sin frameworks:** Las clases de `domain/model` son POJOs puros. No tienen anotaciones de base de datos ni de serialización. Si mañana se cambia R2DBC por MongoDB o Redis, el dominio no se toca.
 - **Sin `@Service` en casos de uso:** Para evitar acoplar la capa de aplicación con Spring, los casos de uso son clases Java estándar y se registran como beans en `UseCaseConfig.java`.
 - **Cero bloqueos en base de datos:** Se utiliza R2DBC en lugar de JDBC/JPA para que la comunicación con PostgreSQL sea reactiva y fluya por el Event Loop de Netty sin bloquear hilos del SO.
-- **Cálculo del producto con mayor stock:** En `GetTopProductPerBranchUseCase`, en lugar de hacer un `GROUP BY` complejo en SQL, obtenemos las sucursales y encadenamos con `.flatMap()` y `.reduce()`. Esto procesa las sucursales en paralelo y obtiene el máximo por sucursal en memoria funcionalmente en $O(n)$. Si una sucursal no tiene productos, `.defaultIfEmpty()` la mantiene en la respuesta con valor nulo.
+- **Cálculo del producto con mayor stock:** En `GetTopProductPerBranchUseCase`, en lugar de hacer un `GROUP BY` complejo en SQL, se recorren las sucursales con `.concatMap()` para conservar su orden y, por cada una, `.reduce()` elige el producto de mayor stock. Si dos productos empatan en stock, gana el de menor id. Si una sucursal no tiene productos, `.defaultIfEmpty()` la mantiene en la respuesta con valor nulo.
 
 ---
 
@@ -223,17 +223,8 @@ Se validan las reglas de negocio y los flujos reactivos usando **JUnit 5**, **Mo
 
 ---
 
-## Infraestructura (Terraform)
+## Infraestructura
 
-En la carpeta `/terraform` están los archivos para provisionar la arquitectura base en AWS:
-- Red con VPC, subnets públicas/privadas en 2 zonas de disponibilidad, IGW y NAT Gateway.
-- Instancia administrada RDS PostgreSQL 16 en subnet privada.
-- Clúster ECS Fargate con Application Load Balancer y healthcheck apuntando a `/actuator/health`.
+El entorno entregado y desplegado es **Render**: `https://accenture-franchise-service.onrender.com`. El blueprint de ese despliegue está en `render.yaml`.
 
-Para desplegar:
-```bash
-cd terraform
-terraform init
-terraform plan
-terraform apply
-```
+La carpeta `/terraform` es un diseño alternativo de AWS (VPC, subnets, NAT Gateway, RDS PostgreSQL 16, ECS Fargate y ALB). **No está aplicado y no es el entorno de la entrega.** No hace falta ejecutar `terraform apply` para evaluar esta prueba. Si alguien lo usa más adelante, `db_password` es obligatorio y no tiene valor por defecto.

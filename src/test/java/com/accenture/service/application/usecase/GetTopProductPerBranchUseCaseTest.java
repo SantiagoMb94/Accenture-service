@@ -19,6 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -91,6 +92,60 @@ class GetTopProductPerBranchUseCaseTest {
         verify(branchRepositoryPort, times(1)).findByFranchiseId(franchiseId);
         verify(productRepositoryPort, times(1)).findByBranchId(10L);
         verify(productRepositoryPort, times(1)).findByBranchId(20L);
+    }
+
+    @Test
+    @DisplayName("A igual stock debe ganar el producto con menor id aunque llegue después")
+    void shouldPreferLowerIdWhenStockIsTied() {
+        Long franchiseId = 1L;
+        Franchise franchise = new Franchise(franchiseId, "Franquicia Empate", Instant.now());
+        Branch branch = new Branch(10L, franchiseId, "Sucursal Centro", Instant.now());
+
+        Product higherIdFirst = new Product(50L, 10L, "Producto Tardío", 40);
+        Product lowerIdLater = new Product(10L, 10L, "Producto Temprano", 40);
+
+        when(franchiseRepositoryPort.findById(franchiseId)).thenReturn(Mono.just(franchise));
+        when(branchRepositoryPort.findByFranchiseId(franchiseId)).thenReturn(Flux.just(branch));
+        when(productRepositoryPort.findByBranchId(10L)).thenReturn(Flux.just(higherIdFirst, lowerIdLater));
+
+        StepVerifier.create(useCase.execute(franchiseId))
+                .assertNext(topBranch -> {
+                    assertThat(topBranch.getBranchId()).isEqualTo(10L);
+                    assertThat(topBranch.hasProduct()).isTrue();
+                    assertThat(topBranch.getTopProduct().getId()).isEqualTo(10L);
+                    assertThat(topBranch.getTopProduct().getName()).isEqualTo("Producto Temprano");
+                    assertThat(topBranch.getTopProduct().getStock()).isEqualTo(40);
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Debe conservar el orden de las sucursales aunque una posterior resuelva antes")
+    void shouldPreserveBranchOrderWhenALaterBranchResolvesFirst() {
+        Long franchiseId = 1L;
+        Franchise franchise = new Franchise(franchiseId, "Franquicia Orden", Instant.now());
+        Branch branch1 = new Branch(10L, franchiseId, "Sucursal Norte", Instant.now());
+        Branch branch2 = new Branch(20L, franchiseId, "Sucursal Sur", Instant.now());
+
+        Product slowProduct = new Product(101L, 10L, "Lento", 5);
+        Product fastProduct = new Product(201L, 20L, "Rápido", 9);
+
+        when(franchiseRepositoryPort.findById(franchiseId)).thenReturn(Mono.just(franchise));
+        when(branchRepositoryPort.findByFranchiseId(franchiseId)).thenReturn(Flux.just(branch1, branch2));
+        when(productRepositoryPort.findByBranchId(10L))
+                .thenReturn(Flux.just(slowProduct).delayElements(Duration.ofMillis(80)));
+        when(productRepositoryPort.findByBranchId(20L)).thenReturn(Flux.just(fastProduct));
+
+        StepVerifier.create(useCase.execute(franchiseId))
+                .assertNext(topBranch -> {
+                    assertThat(topBranch.getBranchId()).isEqualTo(10L);
+                    assertThat(topBranch.getTopProduct().getName()).isEqualTo("Lento");
+                })
+                .assertNext(topBranch -> {
+                    assertThat(topBranch.getBranchId()).isEqualTo(20L);
+                    assertThat(topBranch.getTopProduct().getName()).isEqualTo("Rápido");
+                })
+                .verifyComplete();
     }
 
     @Test

@@ -23,10 +23,9 @@ variable "db_username" {
 }
 
 variable "db_password" {
-  description = "Contraseña de la base de datos PostgreSQL RDS"
+  description = "Contraseña de la base de datos PostgreSQL RDS. Obligatoria, sin valor por defecto."
   type        = string
   sensitive   = true
-  default     = "AccentureSecurePwd2026!"
 }
 
 variable "db_name" {

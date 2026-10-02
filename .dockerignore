@@ -1,0 +1,14 @@
+.git
+.gitattributes
+.gitignore
+.gradle
+build
+terraform
+.idea
+*.iml
+*.ipr
+*.iws
+out
+.vscode
+bin
+*.log
