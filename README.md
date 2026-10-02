@@ -6,6 +6,19 @@ El proyecto implementa una arquitectura limpia (hexagonal) donde el dominio y lo
 
 ---
 
+## 🌐 Despliegue en Vivo en la Nube (Producción)
+
+La solución se encuentra completamente aprovisionada y **desplegada en vivo en la nube** con base de datos PostgreSQL administrada y servicio de contenedores Docker:
+
+- **URL Base:** `https://accenture-franchise-service.onrender.com`
+- **Healthcheck Actuator:** `https://accenture-franchise-service.onrender.com/actuator/health`
+- **API Base:** `https://accenture-franchise-service.onrender.com/api/v1`
+
+> [!TIP]
+> Puedes probar la API en vivo directamente enviando peticiones HTTPS a `https://accenture-franchise-service.onrender.com` o ejecutando los ejemplos `cURL` de este documento sustituyendo `http://localhost:8080` por la URL en la nube.
+
+---
+
 ## Inicio rápido
 
 Para levantar la aplicación y la base de datos localmente solo necesitas Docker:

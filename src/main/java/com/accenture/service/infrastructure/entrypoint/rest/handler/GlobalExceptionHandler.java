@@ -120,6 +120,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatusException(org.springframework.web.server.ResponseStatusException ex, ServerHttpRequest request) {
+        log.warn("Error HTTP {}: {}", ex.getStatusCode(), ex.getReason());
+        ErrorResponse error = new ErrorResponse(
+                URI.create("https://api.accenture.com/errors/" + ex.getStatusCode().value()),
+                ex.getStatusCode().toString(),
+                ex.getStatusCode().value(),
+                ex.getReason() != null ? ex.getReason() : "Recurso no disponible",
+                request.getPath().value()
+        );
+        return ResponseEntity.status(ex.getStatusCode()).body(error);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, ServerHttpRequest request) {
         log.error("Error interno del servidor no controlado: ", ex);
